@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivilBot 3D viewer</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>body{margin:0;overflow:hidden;font-family:system-ui,sans-serif}#ui{position:absolute;top:8px;left:8px;background:#fffd;padding:8px 10px;border-radius:10px;font-size:13px}
+button{margin:2px;padding:6px 9px;border-radius:8px;border:1px solid #ccc;background:#f6f8fa}</style>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+</head><body><div id="ui"><b id="ttl">CivilBot 3D</b><br><button id="def">تشوه ⇄</button><button id="anim">▶️</button><span id="msg"></span></div>
+<script type="module">
+import * as THREE from 'three';import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+window.Telegram?.WebApp?.ready();window.Telegram?.WebApp?.expand();
+let D=window.__MODEL__;
+if(!D){try{D=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))))}catch(e){document.getElementById('msg').textContent=' no model'}}
+const sc=new THREE.Scene();sc.background=new THREE.Color(0xf4f6fa);
+const cam=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1000);const rd=new THREE.WebGLRenderer({antialias:true});
+rd.setSize(innerWidth,innerHeight);rd.setPixelRatio(devicePixelRatio);document.body.appendChild(rd.domElement);
+const ctl=new OrbitControls(cam,rd.domElement);sc.add(new THREE.HemisphereLight(0xffffff,0x888888,1.2));const dl=new THREE.DirectionalLight(0xffffff,1.2);dl.position.set(5,10,7);sc.add(dl);
+const N=D.nodes,Mb=D.members,U=D.disp||N.map(()=>[0,0]),sz=D.size||[0.3,0.5],depth=D.depth||0;
+let span=1;N.forEach(n=>span=Math.max(span,Math.abs(n[0]),Math.abs(n[1])));
+const scale=D.scale||(0.08*span/Math.max(1e-9,...U.map(u=>Math.hypot(u[0],u[1]))));
+const grp=new THREE.Group(),dgrp=new THREE.Group();sc.add(grp,dgrp);
+const mat=new THREE.MeshStandardMaterial({color:0xb0b7c3,roughness:.7}),mat2=new THREE.MeshStandardMaterial({color:0x2da44e,transparent:true,opacity:.85});
+function beam(a,b,m,s){const v=new THREE.Vector3(b[0]-a[0],b[1]-a[1],0),L=v.length();const g=new THREE.BoxGeometry(L,s[1],s[0]);const me=new THREE.Mesh(g,m);
+ me.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,0);me.rotation.z=Math.atan2(v.y,v.x);return me}
+Mb.forEach(([i,j])=>grp.add(beam(N[i],N[j],mat,sz)));
+const k=D.kind==='truss'?[0.12,0.12]:[sz[0]*0.6,sz[1]*0.6];
+Mb.forEach(([i,j])=>dgrp.add(beam([N[i][0]+U[i][0]*scale,N[i][1]+U[i][1]*scale],[N[j][0]+U[j][0]*scale,N[j][1]+U[j][1]*scale],mat2,k)));
+(D.supports||[]).forEach(([n,t])=>{const g=t==='fixed'?new THREE.BoxGeometry(.6,.15,.6):new THREE.ConeGeometry(.25,.4,4);const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:0x1f6feb}));m.position.set(N[n][0],N[n][1]-(t==='fixed'?.1:.25),0);sc.add(m)});
+const grid=new THREE.GridHelper(span*3,Math.round(span*3),0xccd3dc,0xe6eaf0);grid.position.set(span/2,-0.01,0);sc.add(grid);
+let cxm=0,cym=0;N.forEach(n=>{cxm+=n[0];cym+=n[1]});cxm/=N.length;cym/=N.length;ctl.target.set(cxm,cym,0);cam.position.set(cxm+span*.6,cym+span*.5,span*1.4);
+document.getElementById('ttl').textContent=D.title||'CivilBot 3D';
+let showD=true,t=0,anim=true;document.getElementById('def').onclick=()=>{showD=!showD;dgrp.visible=showD};document.getElementById('anim').onclick=()=>anim=!anim;
+function loop(){requestAnimationFrame(loop);if(anim&&showD){t+=.04;const f=(Math.sin(t)+1)/2;dgrp.children.forEach((m,q)=>{const[i,j]=Mb[q];const a=[N[i][0]+U[i][0]*scale*f,N[i][1]+U[i][1]*scale*f],b=[N[j][0]+U[j][0]*scale*f,N[j][1]+U[j][1]*scale*f];const v=[b[0]-a[0],b[1]-a[1]];m.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,0);m.rotation.z=Math.atan2(v[1],v[0])})}ctl.update();rd.render(sc,cam)}
+loop();addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();rd.setSize(innerWidth,innerHeight)});
+</script></body></html>
