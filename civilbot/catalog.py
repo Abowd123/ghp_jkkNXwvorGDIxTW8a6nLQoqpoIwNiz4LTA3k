@@ -1,0 +1,65 @@
+"""Telegram-free tool catalog (names, help, categories) shared by the bot and the web/APK app."""
+from __future__ import annotations
+from . import services as S, services2 as S2, services3 as S3, services4 as S4
+
+META = {
+    "beam": ("📈 القص والعزم SFD/BMD", S.BEAM_HELP),
+    "rc": ("🏗 تصميم كمرة خرسانية", S.RC_HELP),
+    "section": ("📐 خصائص المقاطع", S.SECTION_HELP),
+    "formula": ("🧠 القوانين خطوة بخطوة", ""),
+    "units": ("🔁 محول الوحدات", S.UNITS_HELP),
+    "truss": ("🔺 الجمالونات", S2.TRUSS_HELP),
+    "frame": ("🏛 الإطارات 2D", S2.FRAME_HELP),
+    "column": ("🏢 الأعمدة + P-M", S2.COLUMN_HELP),
+    "slab": ("⬜ البلاطات", S2.SLAB_HELP),
+    "punch": ("🎯 القص الثاقب", S2.SLAB_HELP),
+    "footing": ("🟫 القواعد", S2.FOOTING_HELP),
+    "wall": ("🧱 الجدران الساندة", S2.WALL_HELP),
+    "combo": ("⚖️ تراكيب الأحمال", S2.COMBO_HELP),
+    "trib": ("🧭 مسار الأحمال", S2.TRIB_HELP),
+    "bearing": ("🏔 قدرة التحمل", S3.GEO_HELP),
+    "mohr": ("⭕ دائرة مور", S3.GEO_HELP),
+    "lateral": ("↔️ الضغط الجانبي", S3.GEO_HELP),
+    "consol": ("⬇️ الهبوط", S3.GEO_HELP),
+    "bulb": ("🫧 بصيلات الإجهاد", S3.GEO_HELP),
+    "slope": ("⛰ ثبات المنحدرات", S3.GEO_HELP),
+    "mix": ("🧪 تصميم الخلطة", S3.MAT_HELP),
+    "sieve": ("🪣 التحليل المنخلي", S3.MAT_HELP),
+    "channel": ("🌊 القنوات المفتوحة", S3.HYD_HELP),
+    "pipe": ("🚰 الأنابيب", S3.HYD_HELP),
+    "traverse": ("📐 المضلعات", S3.SUR_HELP),
+    "level": ("📏 الميزانية", S3.SUR_HELP),
+    "hcurve": ("↪️ منحنى أفقي", S3.SUR_HELP),
+    "vcurve": ("⛰ منحنى رأسي", S3.SUR_HELP),
+    "earth": ("🚜 الحفر والردم", S3.SUR_HELP),
+    "pavement": ("🛣 الرصف AASHTO", S3.SUR_HELP),
+    "ssd": ("🚗 مسافة الرؤية", S3.SUR_HELP),
+    "sbeam": ("🔩 كمرة معدنية", S3.STEEL_HELP),
+    "scol": ("🏗 عمود معدني", S3.STEEL_HELP),
+    "stab": ("🔗 وصلة قص", S3.STEEL_HELP),
+    "bplate": ("🟦 لوح القاعدة", S3.STEEL_HELP),
+    "il": ("📉 خطوط التأثير", S3.VIS_HELP),
+    "anim": ("🎬 رسوم متحركة GIF", S3.VIS_HELP),
+    "codes": ("📚 مقارنة الأكواد", S4.AI_HELP),
+    "schedule": ("📋 جدول الأعمدة", S4.SCHED_HELP),
+    "boq": ("🧾 حصر الكميات", S4.BOQ_HELP),
+    "crack": ("🔍 محلل الشروخ (صورة)", S4.AI_HELP),
+    "equation": ("🧮 قارئ المعادلات (صورة)", S4.AI_HELP),
+    "layout": ("🏠 توزيع الأعمدة (صورة)", S4.AI_HELP),
+}
+META["formula"] = ("🧠 القوانين خطوة بخطوة", S.FORMULA_HELP)
+
+CATS = {
+    "analysis": ("🧮 التحليل الإنشائي", ["beam", "truss", "frame", "trib", "combo"]),
+    "design": ("🏗 التصميم الخرساني", ["rc", "column", "slab", "punch", "footing", "wall"]),
+    "geo": ("🌍 ميكانيكا التربة", ["bearing", "mohr", "lateral", "consol", "bulb", "slope"]),
+    "steel": ("🔩 المنشآت المعدنية", ["sbeam", "scol", "stab", "bplate"]),
+    "civil": ("💧 هيدروليكا ومساحة وطرق", ["channel", "pipe", "traverse", "level", "hcurve", "vcurve", "earth", "pavement", "ssd"]),
+    "mat": ("🧪 مواد وخلطات", ["mix", "sieve"]),
+    "vis": ("🎬 تصور وحركة", ["il", "anim"]),
+    "ai": ("🧠 الذكاء الاصطناعي", ["crack", "equation", "layout", "codes"]),
+    "prod": ("📦 الإنتاجية", ["schedule", "boq"]),
+    "tools": ("🛠 أدوات ومراجع", ["section", "formula", "units"]),
+}
+
+PHOTO_TOOLS = {"crack", "equation", "layout"}
