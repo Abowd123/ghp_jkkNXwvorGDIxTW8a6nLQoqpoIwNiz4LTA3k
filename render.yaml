@@ -1,0 +1,12 @@
+# Fallback free host: Render free web service (512 MB, sleeps after 15 min idle; first request wakes it in ~1 min).
+# Runs the WEB APP/API only. Keep the Telegram bot on Oracle (a sleeping bot misses messages).
+services:
+  - type: web
+    name: civilbot-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - {key: WORKERS, value: "0"}      # threads, one job at a time: fits 512 MB
+      - {key: PLOT_DPI, value: "110"}
+    dockerCommand: python -m civilbot.api
