@@ -1,0 +1,6 @@
+# DOMAIN comes from .env, e.g. civilbot.duckdns.org (free). Caddy gets a Let's Encrypt cert automatically.
+{$DOMAIN} {
+    encode gzip
+    reverse_proxy api:8090
+    header Strict-Transport-Security "max-age=31536000"
+}
