@@ -1,0 +1,25 @@
+# Overlay for the free Oracle VM: 2 workers each, API + automatic HTTPS (Caddy + free DuckDNS domain)
+services:
+  civilbot:
+    environment: {WORKERS: "2"}
+    ports: !reset []
+    deploy: {resources: {limits: {cpus: "2", memory: 4g}}}
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment: {WORKERS: "2", API_PORT: "8090"}
+    command: ["python", "-m", "civilbot.api"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8090/health',timeout=4)"]
+      interval: 60s
+    deploy: {resources: {limits: {cpus: "2", memory: 4g}}}
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    env_file: .env
+    volumes: ["./deploy/oracle/Caddyfile:/etc/caddy/Caddyfile:ro", "caddy_data:/data"]
+    depends_on: [api]
+volumes:
+  caddy_data:
