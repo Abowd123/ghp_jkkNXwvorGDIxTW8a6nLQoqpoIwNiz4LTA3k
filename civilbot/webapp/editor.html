@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>CivilBot — محرر الإطارات والجمالونات</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:var(--tg-theme-bg-color,#fff);--fg:var(--tg-theme-text-color,#222);--btn:var(--tg-theme-button-color,#1f6feb);--btnt:var(--tg-theme-button-text-color,#fff)}
+body{margin:0;font-family:system-ui,'Noto Sans Arabic',sans-serif;background:var(--bg);color:var(--fg)}
+header{padding:8px 10px;font-weight:700}
+.bar{display:flex;flex-wrap:wrap;gap:6px;padding:0 8px 6px}
+button,select,input{font:inherit;border-radius:8px;border:1px solid #ccc;padding:6px 9px;background:#f6f8fa;color:#222}
+button.on{background:var(--btn);color:var(--btnt);border-color:var(--btn)}
+#go{background:var(--btn);color:var(--btnt);font-weight:700;width:calc(100% - 16px);margin:6px 8px;padding:10px}
+canvas{display:block;width:100%;touch-action:none;background:#fbfcfe;border-top:1px solid #e1e4e8;border-bottom:1px solid #e1e4e8}
+#info{font-size:13px;padding:6px 10px;direction:ltr;text-align:left;white-space:pre-wrap}
+</style></head><body>
+<header>🏛 محرر المنشآت 2D</header>
+<div class="bar">
+ <select id="kind"><option value="frame">إطار Frame</option><option value="truss">جمالون Truss</option></select>
+ <button data-m="node" class="on">➕ عقدة</button><button data-m="member">📏 عضو</button>
+ <button data-m="support">🔺 ركيزة</button><button data-m="load">⬇️ حمل</button><button data-m="udl">〰 موزع</button><button data-m="del">🗑</button>
+</div>
+<div class="bar">
+ <select id="sup"><option>fixed</option><option>pin</option><option>roller</option><option>rollerx</option></select>
+ <label>Fx <input id="fx" type="number" value="0" style="width:60px"></label>
+ <label>Fy <input id="fy" type="number" value="-20" style="width:60px"></label>
+ <label>w <input id="w" type="number" value="10" style="width:60px"></label>
+ <label>grid <input id="grid" type="number" value="0.5" step="0.25" style="width:55px"></label>
+ <button id="tpl">📐 Portal</button><button id="clr">مسح</button>
+</div>
+<canvas id="cv" height="420"></canvas>
+<button id="go">▶️ حلّل في البوت</button>
+<div id="info"></div>
+<script>
+const tg=window.Telegram?.WebApp; tg?.ready(); tg?.expand();
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');let W,H,S=40,ox=60,oy=360;
+let M={nodes:[],members:[],supports:{},loads:{},udl:{}};let mode='node',sel=null;
+function resize(){W=cv.width=cv.clientWidth*devicePixelRatio;H=cv.height=420*devicePixelRatio;cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);oy=380;draw()}
+addEventListener('resize',resize);
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;sel=null;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));draw()});
+const toW=(px,py)=>{const g=+grid.value||0.5;return[Math.round((px-ox)/S/g)*g,Math.round((oy-py)/S/g)*g]};
+const toP=(x,y)=>[ox+x*S,oy-y*S];
+function nearNode(px,py){let b=-1,d=18;M.nodes.forEach((n,i)=>{const[p,q]=toP(...n);const e=Math.hypot(p-px,q-py);if(e<d){d=e;b=i}});return b}
+function nearMember(px,py){let b=-1,d=12;M.members.forEach(([i,j],k)=>{const[a,c]=toP(...M.nodes[i]),[e,f]=toP(...M.nodes[j]);const L=Math.hypot(e-a,f-c)||1;const t=Math.max(0,Math.min(1,((px-a)*(e-a)+(py-c)*(f-c))/L/L));const dd=Math.hypot(a+t*(e-a)-px,c+t*(f-c)-py);if(dd<d){d=dd;b=k}});return b}
+cv.addEventListener('pointerdown',ev=>{const r=cv.getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top;const n=nearNode(px,py);
+ if(mode==='node'){if(n<0)M.nodes.push(toW(px,py))}
+ else if(mode==='member'){if(n>=0){if(sel===null)sel=n;else if(sel!==n){M.members.push([sel,n]);sel=null}}}
+ else if(mode==='support'){if(n>=0)M.supports[n]=sup.value}
+ else if(mode==='load'){if(n>=0)M.loads[n]=[+fx.value,+fy.value]}
+ else if(mode==='udl'){const k=nearMember(px,py);if(k>=0)M.udl[k]=+w.value}
+ else if(mode==='del'){if(n>=0){delete M.supports[n];delete M.loads[n]}else{const k=nearMember(px,py);if(k>=0){M.members.splice(k,1);M.udl={}}}}
+ draw()});
+function arrow(x1,y1,x2,y2,c){cx.strokeStyle=cx.fillStyle=c;cx.lineWidth=2;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();const a=Math.atan2(y2-y1,x2-x1);cx.beginPath();cx.moveTo(x2,y2);cx.lineTo(x2-9*Math.cos(a-.4),y2-9*Math.sin(a-.4));cx.lineTo(x2-9*Math.cos(a+.4),y2-9*Math.sin(a+.4));cx.fill()}
+function draw(){cx.clearRect(0,0,W,H);const g=+grid.value||0.5;cx.strokeStyle='#eef1f5';cx.lineWidth=1;
+ for(let x=0;ox+x*S<cv.clientWidth;x+=g){cx.beginPath();cx.moveTo(ox+x*S,0);cx.lineTo(ox+x*S,420);cx.stroke()}
+ for(let y=0;oy-y*S>0;y+=g){cx.beginPath();cx.moveTo(0,oy-y*S);cx.lineTo(cv.clientWidth,oy-y*S);cx.stroke()}
+ M.members.forEach(([i,j],k)=>{const[a,b]=toP(...M.nodes[i]),[c,d]=toP(...M.nodes[j]);cx.strokeStyle='#24292f';cx.lineWidth=4;cx.beginPath();cx.moveTo(a,b);cx.lineTo(c,d);cx.stroke();
+  if(M.udl[k]){cx.fillStyle='#1f6feb';cx.font='12px sans-serif';for(let t=0;t<=1.001;t+=.2){const x=a+t*(c-a),y=b+t*(d-b);arrow(x,y-26,x,y-4,'#1f6feb')}cx.fillText('w='+M.udl[k],(a+c)/2,(b+d)/2-30)}
+  cx.fillStyle='#6e7781';cx.font='11px sans-serif';cx.fillText('M'+(k+1),(a+c)/2+4,(b+d)/2+12)});
+ M.nodes.forEach((n,i)=>{const[p,q]=toP(...n);cx.fillStyle=i===sel?'#d1242f':'#24292f';cx.beginPath();cx.arc(p,q,5,0,7);cx.fill();cx.font='12px sans-serif';cx.fillText(i+1,p+7,q-7);
+  const s=M.supports[i];if(s){cx.strokeStyle='#2da44e';cx.lineWidth=2;cx.beginPath();if(s==='fixed'){cx.rect(p-12,q,24,7)}else{cx.moveTo(p,q);cx.lineTo(p-10,q+16);cx.lineTo(p+10,q+16);cx.closePath()}cx.stroke();cx.fillStyle='#2da44e';cx.fillText(s,p-14,q+30)}
+  const L=M.loads[i];if(L){const m=Math.hypot(L[0],L[1])||1;arrow(p-L[0]/m*40,q+L[1]/m*40,p,q,'#d1242f');cx.fillStyle='#d1242f';cx.fillText(Math.round(m*10)/10+' kN',p-L[0]/m*44,q+L[1]/m*44)}});
+ info.textContent=`nodes ${M.nodes.length} · members ${M.members.length} · supports ${Object.keys(M.supports).length} · loads ${Object.keys(M.loads).length}`}
+tpl.onclick=()=>{M={nodes:[[0,0],[0,4],[6,4],[6,0]],members:[[0,1],[1,2],[2,3]],supports:{0:'fixed',3:'fixed'},loads:{1:[20,0]},udl:{1:15}};draw()};
+clr.onclick=()=>{M={nodes:[],members:[],supports:{},loads:{},udl:{}};draw()};
+go.onclick=()=>{if(M.members.length<1||!Object.keys(M.supports).length){alert('أضف أعضاء وركائز');return}
+ const data=JSON.stringify({v:1,kind:kind.value,...M});if(tg&&tg.sendData){tg.sendData(data)}else{info.textContent=data}};
+resize();
+</script></body></html>
