@@ -1,0 +1,24 @@
+{
+  "packageId": "app.civilbot.twa",
+  "host": "civilbot.duckdns.org",
+  "name": "CivilBot | المهندس المدني",
+  "launcherName": "CivilBot",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#0d1117",
+  "navigationColor": "#0d1117",
+  "backgroundColor": "#0d1117",
+  "enableNotifications": false,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://civilbot.duckdns.org/icons/icon-512.png",
+  "maskableIconUrl": "https://civilbot.duckdns.org/icons/maskable-512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "minSdkVersion": 21,
+  "fallbackType": "customtabs",
+  "signingKey": {"path": "./android.keystore", "alias": "civilbot"},
+  "shortcuts": [
+    {"name": "القص والعزم", "shortName": "SFD/BMD", "url": "/?tool=beam", "chosenIconUrl": "https://civilbot.duckdns.org/icons/icon-192.png"},
+    {"name": "تصميم قاعدة", "shortName": "Footing", "url": "/?tool=footing", "chosenIconUrl": "https://civilbot.duckdns.org/icons/icon-192.png"}
+  ]
+}
